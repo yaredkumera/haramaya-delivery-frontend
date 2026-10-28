@@ -56,16 +56,69 @@ export type ProductQuery = {
   page?: number
   limit?: number
 }
-export type CartItem = {
-  product: Product
-  quantity: number
+export const MAX_CART_QUANTITY = 20
+
+export type CartItem = { product: Product; quantity: number }
+export type Cart = { items: CartItem[]; total: number }
+
+export const paymentMethods = ["cod", "telebirr", "cbe"] as const
+export type PaymentMethod = (typeof paymentMethods)[number]
+export const paymentStatuses = ["unpaid", "review", "paid", "rejected"] as const
+export type PaymentStatus = (typeof paymentStatuses)[number]
+export const orderStatuses = ["placed", "ready_for_pickup", "collected", "cancelled"] as const
+export type OrderStatus = (typeof orderStatuses)[number]
+
+export const paymentMethodLabels: Record<PaymentMethod, string> = {
+  cod: "Cash on pickup",
+  telebirr: "Telebirr",
+  cbe: "CBE Birr",
+}
+export const paymentStatusLabels: Record<PaymentStatus, string> = {
+  unpaid: "Pay on pickup",
+  review: "Checking payment",
+  paid: "Paid",
+  rejected: "Payment rejected",
+}
+export const orderStatusLabels: Record<OrderStatus, string> = {
+  placed: "Order placed",
+  ready_for_pickup: "Ready for pickup",
+  collected: "Collected",
+  cancelled: "Cancelled",
 }
 
-export type Cart = {
-  _id?: string
-  id?: string
-  user: string
-  items: CartItem[]
-  createdAt?: string
-  updatedAt?: string
+export type OrderItem = { productId: string; name: string; price: number; imageUrl: string; quantity: number }
+
+export type Order = {
+  id: string
+  items: OrderItem[]
+  total: number
+  paymentMethod: PaymentMethod
+  paymentStatus: PaymentStatus
+  status: OrderStatus
+  pickupCode: string
+  createdAt: string
+  paidAt?: string
+  collectedAt?: string
 }
+
+export type AdminOrder = Order & {
+  customer: { fullName: string; phone: string; email: string }
+  transactionId?: string
+  payerName?: string
+  reviewNotes: string[]
+}
+
+export type AdminOrderList = { items: AdminOrder[]; page: number; limit: number; total: number; totalPages: number }
+export type AdminOrderQuery = {
+  paymentStatus?: PaymentStatus
+  status?: OrderStatus
+  search?: string
+  page?: number
+  limit?: number
+}
+export type OrderAction = "approve" | "reject" | "ready" | "collect" | "cancel"
+
+export type PaymentInfo = Record<"telebirr" | "cbe", { name: string; number: string }>
+export type CheckoutRequest =
+  | { paymentMethod: "cod" }
+  | { paymentMethod: "telebirr" | "cbe"; transactionId: string; payerName: string }

@@ -6,17 +6,28 @@ import AdminProducts from "./pages/AdminProducts";
 import RequireAuth from "./components/RequireAuth";
 import RequireAdmin from "./components/RequireAdmin";
 import CartPage from "./pages/CartPage";
+ import CheckoutPage from "./pages/CheckoutPage"
+import OrderPage from "./pages/OrderPage"
+import MyOrdersPage from "./pages/MyOrdersPage"
+import AdminOrders from "./pages/AdminOrders"
 function App() {
   return (
     <Routes>
       <Route path="/" element={<ProductsPage />} />
-      <Route path="/cart" element={<CartPage />} />
+      
 
-      <Route element={<RequireAuth />}>
-        <Route element={<RequireAdmin />}>
-          <Route path="/admin/products" element={<AdminProducts />} />
-        </Route>
-      </Route>
+
+
+<Route element={<RequireAuth />}>
+  <Route path="/cart" element={<CartPage />} />
+  <Route path="/checkout" element={<CheckoutPage />} />
+  <Route path="/orders" element={<MyOrdersPage />} />
+  <Route path="/orders/:id" element={<OrderPage />} />
+  <Route element={<RequireAdmin />}>
+    <Route path="/admin/products" element={<AdminProducts />} />
+    <Route path="/admin/orders" element={<AdminOrders />} />
+  </Route>
+</Route>
       <Route
         path="/login"
         element={

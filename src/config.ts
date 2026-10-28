@@ -1,0 +1,1 @@
+export const PICKUP_ADDRESS = "Bate ,Main Campus"

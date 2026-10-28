@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { ApiResponse, AuthResult, LoginRequest, RegisterRequest, User } from "../types"
-import type{ProductList,Product,ProductQuery,Cart} from "../types/index.js"
+import type { ApiResponse, AuthResult, LoginRequest, RegisterRequest, User ,ProductList,Product,ProductQuery,Cart
+  ,Order, AdminOrder, AdminOrderList, AdminOrderQuery, OrderAction, PaymentInfo, CheckoutRequest
+} from "../types"
 type StateWithAuth = { auth: { token: string | null } }
 
 export const api = createApi({
   reducerPath: "api",
-    tagTypes: ["Product","Cart"],
+    tagTypes: ["Product","Cart","Order"],
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL||"http://localhost:5000/api",
     prepareHeaders: (headers, { getState }) => {
@@ -74,6 +75,39 @@ export const api = createApi({
       transformResponse: (response: ApiResponse<Cart>) => response.data,
       invalidatesTags: ["Cart"],
     }),
+        getPaymentInfo: build.query<PaymentInfo, void>({
+      query: () => "/orders/payment-info",
+      transformResponse: (response: ApiResponse<PaymentInfo>) => response.data,
+    }),
+    checkout: build.mutation<Order, CheckoutRequest>({
+      query: (body) => ({ url: "/orders", method: "POST", body }),
+      transformResponse: (response: ApiResponse<{ order: Order }>) => response.data.order,
+      invalidatesTags: ["Order", "Cart"],
+    }),
+    getMyOrders: build.query<Order[], void>({
+      query: () => "/orders",
+      transformResponse: (response: ApiResponse<{ orders: Order[] }>) => response.data.orders,
+      providesTags: ["Order"],
+    }),
+    getOrder: build.query<Order, string>({
+      query: (id) => `/orders/${id}`,
+      transformResponse: (response: ApiResponse<{ order: Order }>) => response.data.order,
+      providesTags: ["Order"],
+    }),
+    getAdminOrders: build.query<AdminOrderList, AdminOrderQuery | void>({
+      query: (params) => ({ url: "/admin/orders", params: params ?? undefined }),
+      transformResponse: (response: ApiResponse<AdminOrderList>) => response.data,
+      providesTags: ["Order"],
+    }),
+    adminOrderAction: build.mutation<AdminOrder, { id: string; action: OrderAction; reason?: string }>({
+      query: ({ id, action, reason }) => ({
+        url: `/admin/orders/${id}/${action}`,
+        method: "PATCH",
+        body: reason ? { reason } : undefined,
+      }),
+      transformResponse: (response: ApiResponse<{ order: AdminOrder }>) => response.data.order,
+      invalidatesTags: ["Order"],
+    }),
   }),
 })
 
@@ -90,4 +124,10 @@ export const {
   useUpdateCartItemMutation,
   useRemoveCartItemMutation,
   useClearCartMutation,
+  useGetPaymentInfoQuery,
+  useCheckoutMutation,
+  useGetMyOrdersQuery,
+  useGetOrderQuery,
+  useGetAdminOrdersQuery,
+  useAdminOrderActionMutation,
 } = api

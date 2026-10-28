@@ -1,9 +1,9 @@
 import { Link } from "react-router"
-import { Search, LogIn, LogOut, LayoutDashboard } from "lucide-react"
+import { Search, LogIn, LogOut ,ShoppingCart,Package} from "lucide-react"
 import { api } from "../services/api"
 import { logout } from "../context/authSlice"
 import { useAppDispatch, useAppSelector } from "../context/hooks"
-
+import { useCartCount } from "../hooks/useCartCount"
 type HeaderProps = {
   search?: string
   onSearch?: (value: string) => void
@@ -12,7 +12,7 @@ type HeaderProps = {
 function Header({ search, onSearch }: HeaderProps) {
   const user = useAppSelector((s) => s.auth.user)
   const dispatch = useAppDispatch()
-
+const cartCount=useCartCount()
   function handleLogout() {
     dispatch(logout())
     dispatch(api.util.resetApiState())
@@ -44,15 +44,26 @@ function Header({ search, onSearch }: HeaderProps) {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {user?.role === "admin" && (
-            <Link
-              to="/admin/products"
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </Link>
-          )}
+{user && (
+  <Link to="/orders" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+    <Package className="h-4 w-4" />
+    <span className="hidden sm:inline">My orders</span>
+  </Link>
+)}
+          <Link to="/cart" aria-label="Cart" className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100">
+  <ShoppingCart className="h-5 w-5" />
+  {cartCount > 0 && (
+    <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-bold text-white">
+      {cartCount}
+    </span>
+  )}
+</Link>
+         {user?.role === "admin" && (
+  <>
+    <Link to="/admin/products" className="rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50">Products</Link>
+    <Link to="/admin/orders" className="rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50">Orders</Link>
+  </>
+)}
           {user ? (
             <button
               onClick={handleLogout}

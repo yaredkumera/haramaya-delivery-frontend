@@ -3,3 +3,5 @@ export const formatPrice = (price: number) => `${price.toLocaleString("en-US")} 
 // Asks Cloudinary for a smaller, automatically optimized version of the image
 export const optimizeImage = (url: string, width = 600) =>
   url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`)
+export const formatDate = (iso: string) =>
+  new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })

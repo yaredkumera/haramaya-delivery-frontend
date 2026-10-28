@@ -1,18 +1,20 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import toast from "react-hot-toast"
 import Header from "../components/Header"
 import ProductCard from "../components/ProductCard"
-import { useGetProductsQuery, useAddToCartMutation, useGetCartQuery } from "../services/api"
+import { useAddToCartMutation, useGetProductsQuery } from "../services/api"
+import { useAppSelector } from "../context/hooks"
 import { useDebounce } from "../hooks/useDebounce"
 import { getErrorMessage } from "../utils/apiError"
 import { categories, categoryLabels } from "../types"
 import type { Category, Product } from "../types"
-import toast from "react-hot-toast"
 
 const chips: (Category | undefined)[] = [undefined, ...categories]
 
 function ProductsPage() {
   const navigate = useNavigate()
+  const token = useAppSelector((s) => s.auth.token)
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState<Category | undefined>(undefined)
   const [page, setPage] = useState(1)
@@ -24,12 +26,7 @@ function ProductsPage() {
     page,
     limit: 12,
   })
-
-  // Fetch cart data to show item count and handle adding
-  const { data: cart } = useGetCartQuery()
-  const [addToCart, ] = useAddToCartMutation()
-
-  const cartItemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const [addToCart] = useAddToCartMutation()
 
   function changeSearch(value: string) {
     setSearch(value)
@@ -42,42 +39,29 @@ function ProductsPage() {
   }
 
   async function handleAddToCart(product: Product) {
+    if (!token) {
+      navigate("/login")
+      return
+    }
     try {
       await addToCart({ productId: product.id, quantity: 1 }).unwrap()
-      toast.success(`${product.name} added to cart!`)
-    } catch (err: any) {
+      toast.success(`${product.name} added to cart`)
+    } catch (err) {
       toast.error(getErrorMessage(err))
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Pass cart item count or let Header fetch it */}
-<Header search={search} onSearch={changeSearch} />
+      <Header search={search} onSearch={changeSearch} />
+
       <div className="bg-teal-900 px-4 py-2 text-center text-sm font-medium text-teal-50">
         Harar &amp; Dire Dawa Student Market · Pickup at one address near campus
       </div>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold text-slate-800">Student Essentials</h1>
-            <p className="mt-1 text-slate-500">Daily items from the Harar and Dire Dawa markets.</p>
-          </div>
-          
-          {/* Cart Icon Button at top right of main content if needed */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="relative flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-          >
-            🛒 Cart
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-teal-700 text-xs text-white font-bold">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
-        </div>
+        <h1 className="text-3xl font-extrabold text-slate-800">Student Essentials</h1>
+        <p className="mt-1 text-slate-500">Daily items from the Harar and Dire Dawa markets.</p>
 
         <div className="my-6 flex gap-2 overflow-x-auto pb-1">
           {chips.map((chip) => (
@@ -100,7 +84,7 @@ function ProductsPage() {
         {error && (
           <div className="py-16 text-center">
             <p className="text-red-600">{getErrorMessage(error)}</p>
-            <button onClick={refetch} className="mt-3 text-sm font-semibold text-teal-700 hover:underline">
+            <button onClick={() => refetch()} className="mt-3 text-sm font-semibold text-teal-700 hover:underline">
               Try again
             </button>
           </div>
@@ -118,11 +102,7 @@ function ProductsPage() {
               }`}
             >
               {data.items.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAdd={handleAddToCart} 
-                />
+                <ProductCard key={product.id} product={product} onAdd={handleAddToCart} />
               ))}
             </div>
 
