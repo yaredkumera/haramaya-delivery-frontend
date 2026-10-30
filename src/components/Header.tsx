@@ -62,6 +62,7 @@ const cartCount=useCartCount()
   <>
     <Link to="/admin/products" className="rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50">Products</Link>
     <Link to="/admin/orders" className="rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50">Orders</Link>
+    <Link to="/admin/pickup" className="rounded-lg px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50">Pickup</Link>
   </>
 )}
           {user ? (

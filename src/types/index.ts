@@ -71,7 +71,7 @@ export type OrderStatus = (typeof orderStatuses)[number]
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   cod: "Cash on pickup",
   telebirr: "Telebirr",
-  cbe: "CBE Birr",
+  cbe: "CBE account",
 }
 export const paymentStatusLabels: Record<PaymentStatus, string> = {
   unpaid: "Pay on pickup",
@@ -99,6 +99,13 @@ export type Order = {
   createdAt: string
   paidAt?: string
   collectedAt?: string
+    payment: {
+    receiptSource?: "telebirr" | "cbe"
+    paidTo?: "telebirr" | "cbe"
+    payerName?: string
+    paidAt?: string
+    transactionId?: string
+  }
 }
 
 export type AdminOrder = Order & {
@@ -106,6 +113,9 @@ export type AdminOrder = Order & {
   transactionId?: string
   payerName?: string
   reviewNotes: string[]
+    receiptSource?: "telebirr" | "cbe"
+  paidTo?: "telebirr" | "cbe"
+  receipt?: { payerName?: string; receiverName?: string; amount?: number; paidAt?: string }
 }
 
 export type AdminOrderList = { items: AdminOrder[]; page: number; limit: number; total: number; totalPages: number }
@@ -116,8 +126,7 @@ export type AdminOrderQuery = {
   page?: number
   limit?: number
 }
-export type OrderAction = "approve" | "reject" | "ready" | "collect" | "cancel"
-
+export type OrderAction = "approve" | "reject" | "ready" | "collect" | "cancel" | "recheck"
 export type PaymentInfo = Record<"telebirr" | "cbe", { name: string; number: string }>
 export type CheckoutRequest =
   | { paymentMethod: "cod" }

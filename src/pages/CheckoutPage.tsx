@@ -15,8 +15,8 @@ import { paymentMethodLabels } from "../types"
 import type { CheckoutRequest, PaymentMethod } from "../types"
 
 const methods: { value: PaymentMethod; icon: LucideIcon; hint: string }[] = [
-  { value: "telebirr", icon: Smartphone, hint: "Send money, then enter the transaction ID" },
-  { value: "cbe", icon: Landmark, hint: "Transfer, then enter the transaction ID" },
+    { value: "telebirr", icon: Smartphone, hint: "I send money to your Telebirr number" },
+  { value: "cbe", icon: Landmark, hint: "I send money to your CBE account" },
   { value: "cod", icon: Banknote, hint: "Pay in cash when you collect" },
 ]
 

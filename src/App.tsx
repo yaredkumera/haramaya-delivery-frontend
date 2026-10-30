@@ -10,6 +10,8 @@ import CartPage from "./pages/CartPage";
 import OrderPage from "./pages/OrderPage"
 import MyOrdersPage from "./pages/MyOrdersPage"
 import AdminOrders from "./pages/AdminOrders"
+import PickupPage from "./pages/PickupPage"
+
 function App() {
   return (
     <Routes>
@@ -26,6 +28,8 @@ function App() {
   <Route element={<RequireAdmin />}>
     <Route path="/admin/products" element={<AdminProducts />} />
     <Route path="/admin/orders" element={<AdminOrders />} />
+    <Route path="/admin/pickup" element={<PickupPage />} />
+<Route path="/admin/pickup/:code" element={<PickupPage />} />
   </Route>
 </Route>
       <Route

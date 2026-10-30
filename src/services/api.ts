@@ -108,6 +108,11 @@ export const api = createApi({
       transformResponse: (response: ApiResponse<{ order: AdminOrder }>) => response.data.order,
       invalidatesTags: ["Order"],
     }),
+        getOrderByPickupCode: build.query<AdminOrder, string>({
+      query: (code) => `/admin/orders/pickup/${code}`,
+      transformResponse: (response: ApiResponse<{ order: AdminOrder }>) => response.data.order,
+      providesTags: ["Order"],
+    }),
   }),
 })
 
@@ -130,4 +135,5 @@ export const {
   useGetOrderQuery,
   useGetAdminOrdersQuery,
   useAdminOrderActionMutation,
+  useGetOrderByPickupCodeQuery
 } = api
