@@ -79,6 +79,14 @@ function OrderCard({ order }: { order: AdminOrder }) {
             <p className="text-slate-600">Name typed by customer: <b>{order.payerName}</b></p>
           </>
         )}
+        {order.receipt && (
+  <p className="mt-1 text-slate-600">
+    Bank receipt: <b>{order.receipt.payerName}</b> → {order.receipt.receiverName} · {order.receipt.amount} ETB ·{" "}
+    {order.receipt.paidAt && formatDate(order.receipt.paidAt)}
+    {order.receiptSource && ` · from ${order.receiptSource}`}
+    {order.paidTo && ` · to ${order.paidTo}`}
+  </p>
+)}
       </div>
 
       {order.reviewNotes.length > 0 && (
@@ -104,6 +112,9 @@ function OrderCard({ order }: { order: AdminOrder }) {
         <div className="flex flex-wrap gap-2">
           {order.paymentStatus === "review" && (
             <>
+            <button disabled={isLoading} onClick={() => run("recheck")} className={`${button} bg-slate-100 text-slate-700`}>
+  {isLoading ? "Checking..." : "Re-check receipt"}
+</button>
               <button disabled={isLoading} onClick={() => run("approve")} className={`${button} bg-emerald-600 text-white`}>Approve payment</button>
               <button disabled={isLoading} onClick={() => setRejecting(true)} className={`${button} bg-red-50 text-red-700`}>Reject</button>
             </>

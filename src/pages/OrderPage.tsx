@@ -4,10 +4,12 @@ import { PaymentBadge, StatusSteps } from "../components/StatusBadge"
 import { useGetOrderQuery } from "../services/api"
 import { getErrorMessage } from "../utils/apiError"
 import { formatDate, formatPrice, optimizeImage } from "../utils/format"
-import { PICKUP_ADDRESS } from "../config"
+// import { PICKUP_ADDRESS } from "../config"
+import ReceiptCard from "../components/ReceiptCard"
+
 import { paymentMethodLabels } from "../types"
 import type { PaymentStatus } from "../types"
-
+import { useState,useEffect } from "react"
 const notices: Record<PaymentStatus, { tone: string; text: string }> = {
   paid: { tone: "bg-emerald-50 text-emerald-800", text: "Payment verified. We are preparing your order." },
   review: {
@@ -23,8 +25,12 @@ const notices: Record<PaymentStatus, { tone: string; text: string }> = {
 
 function OrderPage() {
   const { id = "" } = useParams()
-  const { data: order, isLoading, error, refetch } = useGetOrderQuery(id)
+const [polling, setPolling] = useState(5000)
+const { data: order, isLoading, error, refetch } = useGetOrderQuery(id, { pollingInterval: polling })
 
+useEffect(() => {
+  if (order && order.paymentStatus !== "review") setPolling(0)
+}, [order])
   const notice = order && notices[order.paymentStatus]
   const cancelledByUs = order?.status === "cancelled" && order.paymentStatus !== "rejected"
 
@@ -44,14 +50,7 @@ function OrderPage() {
               )}
             </div>
 
-            <section className="rounded-2xl bg-white p-6 text-center ring-1 ring-slate-200">
-              <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Your pickup code</p>
-              <p className="mt-2 font-mono text-4xl font-extrabold tracking-widest text-slate-900">{order.pickupCode}</p>
-              <p className="mt-3 text-sm text-slate-500">
-                Collect at <b className="text-slate-700">{PICKUP_ADDRESS}</b>. Bring this code and a physical
-                student ID or national ID. You can find the code again in My orders.
-              </p>
-            </section>
+            <ReceiptCard order={order} />
 
             <section className="space-y-4 rounded-2xl bg-white p-6 ring-1 ring-slate-200">
               <div className="flex items-center justify-between gap-2">
