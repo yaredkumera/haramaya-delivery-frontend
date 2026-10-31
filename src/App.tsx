@@ -11,9 +11,11 @@ import OrderPage from "./pages/OrderPage"
 import MyOrdersPage from "./pages/MyOrdersPage"
 import AdminOrders from "./pages/AdminOrders"
 import PickupPage from "./pages/PickupPage"
+import { Toaster } from "react-hot-toast"
 
 function App() {
   return (
+    <>
     <Routes>
       <Route path="/" element={<ProductsPage />} />
       
@@ -44,6 +46,15 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="*" element={<p className="p-6">Page not found</p>} />
     </Routes>
+    <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3500,
+          style: { borderRadius: "12px", fontSize: "14px", fontWeight: 500 },
+          className: "dark:!bg-slate-800 dark:!text-slate-100",
+        }}
+      />
+    </>
   );
 }
 

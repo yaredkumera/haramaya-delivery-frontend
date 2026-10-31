@@ -9,11 +9,15 @@ import Field from "../components/Field"
 import FormError from "../components/FormError"
 import SubmitButton from "../components/SubmitButton"
 
+const tidyName = (text: string) => text.replace(/\s+/g, " ").trim()
+
 function Register() {
   const navigate = useNavigate()
   const [register, { isLoading }] = useRegisterMutation()
 
-  const [fullName, setFullName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [middleName, setMiddleName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -24,14 +28,17 @@ function Register() {
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    const first = tidyName(firstName)
+    const middle = tidyName(middleName)
+    const last = tidyName(lastName)
     const cleanPhone = phone.replace(/[\s-]/g, "")
 
-    if (!fullName.trim() || !cleanPhone || !email.trim() || !password || !confirmPassword) {
+    if (!first || !middle || !last || !cleanPhone || !email.trim() || !password || !confirmPassword) {
       setError("Please fill in all fields")
       return
     }
-    if (fullName.trim().length < 2) {
-      setError("Please enter your full name")
+    if (first.length < 2 || middle.length < 2 || last.length < 2) {
+      setError("Each name must have at least 2 letters")
       return
     }
     if (!/^(\+251|251|0)?[79]\d{8}$/.test(cleanPhone)) {
@@ -51,6 +58,9 @@ function Register() {
       return
     }
 
+    // The three names are joined into one full name before reaching the server
+    const fullName = [first, middle, last].join(" ")
+
     setError(null)
     setFieldErrors({})
     try {
@@ -69,16 +79,40 @@ function Register() {
       heroTitle="Join Haramaya Delivery."
       heroText="Create a free account to start ordering. It takes less than a minute."
     >
-      <form onSubmit={handleSubmit} className="space-y-3.5">
-        <Field
-          id="fullName"
-          label="Full Name"
-          icon={User}
-          value={fullName}
-          onChange={setFullName}
-          placeholder="Abebe Bikila"
-          error={fieldErrors.fullName}
-        />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            id="firstName"
+            label="First name"
+            icon={User}
+            value={firstName}
+            onChange={setFirstName}
+            placeholder="Abebe"
+            autoComplete="given-name"
+          />
+          <Field
+            id="middleName"
+            label="Middle name"
+            icon={User}
+            value={middleName}
+            onChange={setMiddleName}
+            placeholder="Bikila"
+            autoComplete="additional-name"
+          />
+          <div className="sm:col-span-2">
+            <Field
+              id="lastName"
+              label="Last name"
+              icon={User}
+              value={lastName}
+              onChange={setLastName}
+              placeholder="Kebede"
+              autoComplete="family-name"
+              error={fieldErrors.fullName}
+            />
+          </div>
+        </div>
+
         <Field
           id="phone"
           label="Phone Number"
@@ -87,6 +121,7 @@ function Register() {
           value={phone}
           onChange={setPhone}
           placeholder="0912345678"
+          autoComplete="tel"
           error={fieldErrors.phone}
         />
         <Field
@@ -97,27 +132,32 @@ function Register() {
           value={email}
           onChange={setEmail}
           placeholder="student@gmail.com"
+          autoComplete="email"
           error={fieldErrors.email}
         />
-        <Field
-          id="password"
-          label="Password"
-          icon={Lock}
-          type="password"
-          value={password}
-          onChange={setPassword}
-          placeholder="At least 8 characters"
-          error={fieldErrors.password}
-        />
-        <Field
-          id="confirmPassword"
-          label="Confirm Password"
-          icon={Lock}
-          type="password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          placeholder="Repeat your password"
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            id="password"
+            label="Password"
+            icon={Lock}
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder="At least 8 characters"
+            autoComplete="new-password"
+            error={fieldErrors.password}
+          />
+          <Field
+            id="confirmPassword"
+            label="Confirm Password"
+            icon={Lock}
+            type="password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder="Repeat your password"
+            autoComplete="new-password"
+          />
+        </div>
 
         <FormError message={error} />
 
@@ -125,13 +165,13 @@ function Register() {
           Register Now &amp; Start Ordering
         </SubmitButton>
 
-        <p className="pt-2 text-sm text-slate-500">
+        <p className="pt-2 text-sm text-slate-500 dark:text-slate-400">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-teal-700 hover:underline">
+          <Link to="/login" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
             Sign in
           </Link>
         </p>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-400 dark:text-slate-500">
           By registering, you agree to our <span className="underline">Terms &amp; Conditions</span>.
         </p>
       </form>
