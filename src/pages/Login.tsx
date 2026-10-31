@@ -54,16 +54,16 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
       <button
         type="button"
         onClick={() => onGoogleSignIn?.()}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
       >
         <GoogleIcon />
         Continue with Google
       </button>
 
       <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs text-slate-400">or sign in with email</span>
-        <div className="h-px flex-1 bg-slate-200" />
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <span className="text-xs text-slate-400 dark:text-slate-500">or sign in with email</span>
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,6 +75,7 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
           value={email}
           onChange={setEmail}
           placeholder="student@gmail.com"
+          autoComplete="email"
         />
         <Field
           id="password"
@@ -84,11 +85,12 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
           value={password}
           onChange={setPassword}
           placeholder="••••••••"
+          autoComplete="current-password"
           labelAction={
             <button
               type="button"
               onClick={() => onForgotPassword?.()}
-              className="text-xs font-medium text-teal-700 hover:underline"
+              className="text-xs font-semibold text-teal-700 hover:underline dark:text-teal-400"
             >
               Forgot password?
             </button>
@@ -102,9 +104,9 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
         </SubmitButton>
       </form>
 
-      <p className="mt-6 border-t border-slate-100 pt-4 text-sm text-slate-500">
+      <p className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
         New to Haramaya Delivery?{" "}
-        <Link to="/register" className="font-semibold text-teal-700 hover:underline">
+        <Link to="/register" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
           Create account
         </Link>
       </p>
