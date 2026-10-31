@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
+import { AlertCircle, ArrowLeft, Minus, Plus, RefreshCw, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react"
 import Header from "../components/Header"
 import {
   useClearCartMutation,
@@ -11,6 +11,11 @@ import {
 import { getErrorMessage } from "../utils/apiError"
 import { formatPrice, optimizeImage } from "../utils/format"
 import { MAX_CART_QUANTITY } from "../types"
+
+const card = "rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+
+const stepButton =
+  "flex h-9 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
 
 function CartPage() {
   const navigate = useNavigate()
@@ -23,6 +28,7 @@ function CartPage() {
   const busy = updating || removing || clearing
   const items = cart?.items ?? []
   const hasUnavailable = items.some((item) => !item.product.available)
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   async function run(action: () => Promise<unknown>) {
     setActionError(null)
@@ -34,55 +40,88 @@ function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Header />
 
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="rounded-lg bg-white p-2 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              to="/"
+              aria-label="Back to products"
+              className="shrink-0 rounded-xl bg-white p-2 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-slate-700"
+            >
+              <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-300" />
             </Link>
-            <h1 className="text-2xl font-extrabold text-slate-800">Your Shopping Cart</h1>
+            <div className="min-w-0">
+              <h1 className="truncate text-xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">
+                Your Shopping Cart
+              </h1>
+              {items.length > 0 && (
+                <p className="text-xs text-slate-500 sm:text-sm dark:text-slate-400">
+                  {itemCount} {itemCount === 1 ? "item" : "items"}
+                </p>
+              )}
+            </div>
           </div>
           {items.length > 0 && (
             <button
+              type="button"
               disabled={busy}
               onClick={() => run(() => clearCart().unwrap())}
-              className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/10"
             >
-              Clear Cart
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Clear Cart</span>
+              <span className="sm:hidden">Clear</span>
             </button>
           )}
         </div>
 
-        {isLoading && <p className="py-16 text-center text-slate-500">Loading your cart...</p>}
+        {isLoading && (
+          <div className="animate-pulse space-y-4" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+            ))}
+          </div>
+        )}
 
         {error && !cart && (
-          <div className="py-16 text-center">
-            <p className="text-red-600">{getErrorMessage(error)}</p>
-            <button onClick={() => refetch()} className="mt-3 text-sm font-semibold text-teal-700 hover:underline">
+          <div className={`${card} mx-auto max-w-md p-8 text-center`}>
+            <p className="font-medium text-red-600 dark:text-red-400">{getErrorMessage(error)}</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
+            >
+              <RefreshCw className="h-4 w-4" />
               Try again
             </button>
           </div>
         )}
 
         {actionError && (
-          <div role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 ring-1 ring-red-200">
-            {actionError}
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-600 ring-1 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{actionError}</span>
           </div>
         )}
 
         {cart && items.length === 0 && (
-          <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-200">
-            <ShoppingBag className="mx-auto h-12 w-12 text-slate-300" />
-            <h2 className="mt-4 text-lg font-bold text-slate-800">Your cart is empty</h2>
-            <p className="mt-1 text-sm text-slate-500">
+          <div className={`${card} mx-auto max-w-lg p-8 text-center sm:p-12`}>
+            <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-500/10">
+              <ShoppingBag className="h-10 w-10 text-teal-600 dark:text-teal-400" />
+            </span>
+            <h2 className="mt-5 text-lg font-bold text-slate-800 dark:text-slate-100">Your cart is empty</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Explore items from Harar and Dire Dawa markets and add them here.
             </p>
             <Link
               to="/"
-              className="mt-6 inline-block rounded-xl bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-800"
+              className="mt-6 inline-block rounded-xl bg-teal-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500"
             >
               Browse Products
             </Link>
@@ -90,88 +129,107 @@ function CartPage() {
         )}
 
         {cart && items.length > 0 && (
-          <div className="grid gap-8 lg:grid-cols-3">
-            <ul className="space-y-4 lg:col-span-2">
+          <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
+            <ul className="space-y-3 sm:space-y-4 lg:col-span-2">
               {items.map(({ product, quantity }) => (
-                <li
-                  key={product.id}
-                  className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200"
-                >
+                <li key={product.id} className={`${card} flex gap-3 p-3 sm:gap-4 sm:p-4`}>
                   <img
                     src={optimizeImage(product.imageUrl, 160)}
                     alt={product.name}
-                    className={`h-20 w-20 rounded-xl object-cover ${product.available ? "" : "opacity-50"}`}
+                    className={`h-20 w-20 shrink-0 rounded-xl bg-slate-100 object-cover sm:h-24 sm:w-24 dark:bg-slate-700 ${
+                      product.available ? "" : "opacity-50"
+                    }`}
                   />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-bold text-slate-800">{product.name}</h3>
-                    <p className="text-sm font-semibold text-teal-700">{formatPrice(product.price)}</p>
+
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <h3 className="line-clamp-2 font-semibold leading-snug text-slate-800 dark:text-slate-100">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm font-semibold text-teal-700 dark:text-teal-400">
+                      {formatPrice(product.price)}
+                    </p>
                     {!product.available && (
-                      <p className="text-xs font-medium text-red-600">No longer available. Please remove it.</p>
+                      <p className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                        No longer available. Please remove it.
+                      </p>
                     )}
 
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="flex items-center rounded-lg border border-slate-200">
+                    <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3">
+                      <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600">
                         <button
+                          type="button"
                           aria-label="Decrease quantity"
                           disabled={busy || quantity <= 1}
                           onClick={() => run(() => updateItem({ productId: product.id, quantity: quantity - 1 }).unwrap())}
-                          className="p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          className={stepButton}
                         >
                           <Minus className="h-4 w-4" />
                         </button>
-                        <span className="w-8 text-center text-sm font-medium text-slate-800">{quantity}</span>
+                        <span className="w-9 text-center text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          {quantity}
+                        </span>
                         <button
+                          type="button"
                           aria-label="Increase quantity"
                           disabled={busy || quantity >= MAX_CART_QUANTITY}
                           onClick={() => run(() => updateItem({ productId: product.id, quantity: quantity + 1 }).unwrap())}
-                          className="p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          className={stepButton}
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
 
                       <button
+                        type="button"
                         aria-label={`Remove ${product.name}`}
                         disabled={busy}
                         onClick={() => run(() => removeItem(product.id).unwrap())}
-                        className="text-slate-400 transition hover:text-red-600 disabled:opacity-40"
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
+
+                      <p className="ml-auto font-bold text-slate-900 dark:text-slate-100">
+                        {formatPrice(product.price * quantity)}
+                      </p>
                     </div>
                   </div>
-                  <p className="font-bold text-slate-900">{formatPrice(product.price * quantity)}</p>
                 </li>
               ))}
             </ul>
 
-            <div className="h-fit rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-              <h3 className="text-lg font-bold text-slate-800">Order Summary</h3>
-              <div className="my-4 space-y-2 border-b border-slate-100 pb-4 text-sm text-slate-600">
+            <aside className={`${card} h-fit p-5 sm:p-6 lg:sticky lg:top-24`}>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Order Summary</h3>
+              <div className="my-4 space-y-2 border-b border-slate-100 pb-4 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-slate-800">{formatPrice(cart.total)}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">{formatPrice(cart.total)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Pickup</span>
-                  <span className="font-semibold text-slate-800">Free</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Free</span>
                 </div>
               </div>
-              <div className="flex justify-between text-base font-bold text-slate-800">
+              <div className="flex items-center justify-between text-base font-bold text-slate-800 dark:text-slate-100">
                 <span>Total</span>
-                <span className="text-teal-700">{formatPrice(cart.total)}</span>
+                <span className="text-xl text-teal-700 dark:text-teal-400">{formatPrice(cart.total)}</span>
               </div>
               {hasUnavailable && (
-                <p className="mt-3 text-xs text-red-600">Remove unavailable items to continue.</p>
+                <p className="mt-3 text-xs text-red-600 dark:text-red-400">Remove unavailable items to continue.</p>
               )}
               <button
+                type="button"
                 disabled={busy || hasUnavailable}
                 onClick={() => navigate("/checkout")}
-                className="mt-6 w-full rounded-xl bg-teal-700 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50"
+                className="mt-5 w-full rounded-xl bg-teal-700 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-teal-600 dark:hover:bg-teal-500 dark:focus-visible:ring-offset-slate-800"
               >
                 Proceed to Checkout
               </button>
-            </div>
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Every payment is checked before pickup
+              </p>
+            </aside>
           </div>
         )}
       </main>
