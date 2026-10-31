@@ -1,24 +1,92 @@
 import { useState } from "react"
 import type { SubmitEvent } from "react"
 import { Link, useNavigate } from "react-router"
-import { Banknote, Check, Hash, Landmark, Smartphone, User } from "lucide-react"
+import { Banknote, Check, Copy, Hash, Landmark, Smartphone, User, Zap } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Header from "../components/Header"
-import Field from "../components/Field"
 import FormError from "../components/FormError"
-import SubmitButton from "../components/SubmitButton"
 import { useCheckoutMutation, useGetCartQuery, useGetPaymentInfoQuery } from "../services/api"
 import { getErrorMessage, getFieldErrors } from "../utils/apiError"
 import { formatPrice } from "../utils/format"
 import { PICKUP_ADDRESS } from "../config"
-import { paymentMethodLabels } from "../types"
-import type { CheckoutRequest, PaymentMethod } from "../types"
+import type { CheckoutRequest } from "../types"
 
-const methods: { value: PaymentMethod; icon: LucideIcon; hint: string }[] = [
-    { value: "telebirr", icon: Smartphone, hint: "I send money to your Telebirr number" },
-  { value: "cbe", icon: Landmark, hint: "I send money to your CBE account" },
-  { value: "cod", icon: Banknote, hint: "Pay in cash when you collect" },
+type OptionId = "telebirr-telebirr" | "telebirr-cbe" | "cbe-cbe" | "cod"
+
+type Option = {
+  id: OptionId
+  // The app the customer pays FROM. It decides which receipt the server reads.
+  method: "telebirr" | "cbe" | "cod"
+  // Which of our accounts receives the money
+  payTo: "telebirr" | "cbe" | null
+  icon: LucideIcon
+  title: string
+  hint: string
+  badge?: string
+  speed: string
+  idRule?: { length: number; pattern: RegExp; placeholder: string; help: string }
+}
+
+const options: Option[] = [
+  {
+    id: "cbe-cbe",
+    method: "cbe",
+    payTo: "cbe",
+    icon: Landmark,
+    title: "From my CBE to your CBE",
+    hint: "Send from the CBE app or Mobile Banking to our CBE account",
+    badge: "Fastest · Recommended",
+    speed: "Checked automatically within seconds.",
+    idRule: {
+      length: 12,
+      pattern: /^FT[A-Z0-9]{10}$/,
+      placeholder: "FT26304ABCDE",
+      help: "12 characters, starts with FT",
+    },
+  },
+  {
+    id: "telebirr-telebirr",
+    method: "telebirr",
+    payTo: "telebirr",
+    icon: Smartphone,
+    title: "From my Telebirr to your Telebirr",
+    hint: "Send from the Telebirr app to our Telebirr number",
+    speed: "Usually checked within a minute or two. Some orders may need a manual check.",
+    idRule: {
+      length: 10,
+      pattern: /^[A-Z0-9]{10}$/,
+      placeholder: "DKU1A2B3C4",
+      help: "10 characters, letters and numbers",
+    },
+  },
+  {
+    id: "telebirr-cbe",
+    method: "telebirr",
+    payTo: "cbe",
+    icon: Smartphone,
+    title: "From my Telebirr to your CBE",
+    hint: "Send from the Telebirr app to our CBE account",
+    speed: "Usually checked within a minute or two. Some orders may need a manual check.",
+    idRule: {
+      length: 10,
+      pattern: /^[A-Z0-9]{10}$/,
+      placeholder: "DKU1A2B3C4",
+      help: "Use the Telebirr transaction ID: 10 characters, letters and numbers",
+    },
+  },
+  {
+    id: "cod",
+    method: "cod",
+    payTo: null,
+    icon: Banknote,
+    title: "Cash when I collect",
+    hint: "Pay in cash at the pickup point",
+    speed: "No payment check is needed.",
+  },
 ]
+
+// Removes stray quotes and commas that may be stored around the account details
+const tidy = (text?: string) => (text ?? "").replace(/^["'\s]+|["',\s]+$/g, "")
 
 function CheckoutPage() {
   const navigate = useNavigate()
@@ -26,29 +94,64 @@ function CheckoutPage() {
   const { data: info } = useGetPaymentInfoQuery()
   const [checkout, { isLoading: placing }] = useCheckoutMutation()
 
-  const [method, setMethod] = useState<PaymentMethod>("telebirr")
+  const [optionId, setOptionId] = useState<OptionId>("cbe-cbe")
   const [transactionId, setTransactionId] = useState("")
-  const [payerName, setPayerName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const items = cart?.items ?? []
   const total = cart?.total ?? 0
   const blocked = items.some((item) => !item.product.available)
-  const payTo = method === "cod" ? undefined : info?.[method]
+
+  const option = options.find((o) => o.id === optionId) ?? options[0]
+  const payTo = option.payTo ? info?.[option.payTo] : undefined
+  const rule = option.idRule
+
+  const idValid = rule ? rule.pattern.test(transactionId) : true
+  const namesValid = option.method === "cod" ? true : firstName.trim().length >= 2 && lastName.trim().length >= 2
+  const canSubmit = items.length > 0 && !blocked && !placing && idValid && namesValid && (option.method === "cod" || Boolean(payTo))
+
+  function chooseOption(id: OptionId) {
+    setOptionId(id)
+    setTransactionId("")
+    setError(null)
+    setFieldErrors({})
+    setCopied(false)
+  }
+
+  function changeTransactionId(value: string) {
+    const max = rule?.length ?? 12
+    setTransactionId(value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, max))
+  }
+
+  async function copyNumber() {
+    try {
+      await navigator.clipboard.writeText(tidy(payTo?.number))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!canSubmit) return
     setError(null)
     setFieldErrors({})
 
-    if (method !== "cod" && (!transactionId.trim() || !payerName.trim())) {
-      setError("Enter the transaction ID and the name on your account")
-      return
-    }
-
+    const method = option.method
     const body: CheckoutRequest =
-      method === "cod" ? { paymentMethod: "cod" } : { paymentMethod: method, transactionId, payerName }
+      method === "cod"
+        ? { paymentMethod: "cod" }
+        : {
+            paymentMethod: method,
+            transactionId,
+            payerName: `${firstName.trim()} ${lastName.trim()}`,
+          }
 
     try {
       const order = await checkout(body).unwrap()
@@ -59,11 +162,14 @@ function CheckoutPage() {
     }
   }
 
+  const inputClass =
+    "w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20"
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="text-2xl font-extrabold text-slate-800">Checkout</h1>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl">Checkout</h1>
 
         {isLoading && <p className="py-16 text-center text-slate-500">Loading...</p>}
 
@@ -77,63 +183,162 @@ function CheckoutPage() {
         )}
 
         {items.length > 0 && (
-          <form onSubmit={handleSubmit} className="mt-6 grid gap-8 lg:grid-cols-3">
-            <section className="space-y-5 lg:col-span-2">
-              <fieldset className="grid gap-3 sm:grid-cols-3">
-                <legend className="sr-only">Payment method</legend>
-                {methods.map(({ value, icon: Icon, hint }) => (
-                  <label
-                    key={value}
-                    className={`cursor-pointer rounded-2xl bg-white p-4 ring-1 transition ${
-                      method === value ? "ring-2 ring-teal-600" : "ring-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="method"
-                      value={value}
-                      checked={method === value}
-                      onChange={() => setMethod(value)}
-                      className="sr-only"
-                    />
-                    <Icon className="h-5 w-5 text-teal-700" />
-                    <p className="mt-2 font-semibold text-slate-800">{paymentMethodLabels[value]}</p>
-                    <p className="mt-1 text-xs text-slate-500">{hint}</p>
-                  </label>
-                ))}
+          <form onSubmit={handleSubmit} className="mt-6 grid gap-6 lg:grid-cols-3 lg:gap-8">
+            <section className="min-w-0 space-y-5 lg:col-span-2">
+              <fieldset>
+                <legend className="mb-3 text-sm font-semibold text-slate-700">1. How will you pay?</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {options.map((o) => {
+                    const Icon = o.icon
+                    const selected = o.id === optionId
+                    return (
+                      <label
+                        key={o.id}
+                        className={`relative cursor-pointer rounded-2xl bg-white p-4 ring-1 transition ${
+                          selected ? "ring-2 ring-teal-600" : "ring-slate-200 hover:bg-slate-50"
+                        } ${o.id === "cbe-cbe" ? "sm:col-span-2" : ""}`}
+                      >
+                        <input
+                          type="radio"
+                          name="option"
+                          value={o.id}
+                          checked={selected}
+                          onChange={() => chooseOption(o.id)}
+                          className="sr-only"
+                        />
+                        <div className="flex items-start gap-3">
+                          <Icon className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-800">{o.title}</p>
+                            <p className="mt-1 text-xs text-slate-500">{o.hint}</p>
+                            {o.badge && (
+                              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-teal-100 px-2.5 py-1 text-xs font-semibold text-teal-800">
+                                <Zap className="h-3.5 w-3.5" />
+                                {o.badge}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
               </fieldset>
 
-              {payTo && (
-                <div className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-slate-200">
-                  <div className="rounded-xl bg-teal-50 p-4 text-sm text-teal-900">
-                    <p>
-                      Send exactly <b>{formatPrice(total)}</b> to:
-                    </p>
-                    <p className="mt-1 font-semibold">{payTo.name}</p>
-                    <p className="font-mono text-base">{payTo.number}</p>
+              {option.method !== "cod" && (
+                <div className="space-y-5 rounded-2xl bg-white p-4 ring-1 ring-slate-200 sm:p-5">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">2. Send the money</p>
+                    <div className="mt-3 rounded-xl bg-teal-50 p-4 text-sm text-teal-900">
+                      <p>
+                        Send exactly <b>{formatPrice(total)}</b> to this {option.payTo === "cbe" ? "CBE account" : "Telebirr number"}:
+                      </p>
+                      {payTo ? (
+                        <>
+                          <p className="mt-2 text-xs uppercase tracking-wide text-teal-700">Account holder</p>
+                          <p className="font-semibold">{tidy(payTo.name)}</p>
+                          <p className="mt-2 text-xs uppercase tracking-wide text-teal-700">
+                            {option.payTo === "cbe" ? "Account number" : "Phone number"}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <p className="break-all font-mono text-lg font-semibold">{tidy(payTo.number)}</p>
+                            <button
+                              type="button"
+                              onClick={copyNumber}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-teal-800 ring-1 ring-teal-200 hover:bg-teal-100"
+                            >
+                              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                              {copied ? "Copied" : "Copy"}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="mt-2 text-teal-700">Loading account details...</p>
+                      )}
+                    </div>
+                    <p className="mt-3 text-xs text-slate-500">{option.speed}</p>
                   </div>
-                  <Field
-                    id="transactionId"
-                    label="Transaction ID"
-                    icon={Hash}
-                    value={transactionId}
-                    onChange={setTransactionId}
-                    placeholder="As shown on your receipt"
-                    error={fieldErrors.transactionId}
-                  />
-                  <Field
-                    id="payerName"
-                    label="Name on your account"
-                    icon={User}
-                    value={payerName}
-                    onChange={setPayerName}
-                    placeholder="The name that sent the money"
-                    error={fieldErrors.payerName}
-                  />
+
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold text-slate-700">3. Enter your payment details</p>
+
+                    <div>
+                      <label htmlFor="transactionId" className="mb-1 block text-sm font-medium text-slate-700">
+                        Transaction ID
+                      </label>
+                      <div className="relative">
+                        <Hash className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <input
+                          id="transactionId"
+                          type="text"
+                          inputMode="text"
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                          required
+                          maxLength={rule?.length}
+                          value={transactionId}
+                          onChange={(e) => changeTransactionId(e.target.value)}
+                          placeholder={rule?.placeholder}
+                          className={`${inputClass} font-mono tracking-wider`}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {rule?.help} ({transactionId.length}/{rule?.length})
+                      </p>
+                      {fieldErrors.transactionId && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.transactionId}</p>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+                          First name
+                        </label>
+                        <div className="relative">
+                          <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <input
+                            id="firstName"
+                            type="text"
+                            autoComplete="given-name"
+                            required
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder="First name"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+                          Last name
+                        </label>
+                        <div className="relative">
+                          <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <input
+                            id="lastName"
+                            type="text"
+                            autoComplete="family-name"
+                            required
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder="Last name"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="-mt-2 text-xs text-slate-500">
+                      Type the name of the {option.method === "cbe" ? "CBE" : "Telebirr"} account you sent the money from, exactly as
+                      it appears on your receipt.
+                    </p>
+                    {fieldErrors.payerName && <p className="text-sm text-red-600">{fieldErrors.payerName}</p>}
+                  </div>
                 </div>
               )}
 
-              {method === "cod" && (
+              {option.method === "cod" && (
                 <p className="rounded-2xl bg-white p-5 text-sm text-slate-600 ring-1 ring-slate-200">
                   Pay <b>{formatPrice(total)}</b> in cash when you collect your order.
                 </p>
@@ -145,13 +350,15 @@ function CheckoutPage() {
               </p>
             </section>
 
-            <aside className="h-fit space-y-4 rounded-2xl bg-white p-5 ring-1 ring-slate-200">
+            <aside className="h-fit space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200 sm:p-5 lg:sticky lg:top-6">
               <h2 className="font-bold text-slate-800">Your order</h2>
               <ul className="space-y-1 text-sm text-slate-600">
                 {items.map(({ product, quantity }) => (
                   <li key={product.id} className="flex justify-between gap-2">
-                    <span className="truncate">{quantity} × {product.name}</span>
-                    <span>{formatPrice(product.price * quantity)}</span>
+                    <span className="min-w-0 truncate">
+                      {quantity} × {product.name}
+                    </span>
+                    <span className="shrink-0">{formatPrice(product.price * quantity)}</span>
                   </li>
                 ))}
               </ul>
@@ -167,9 +374,21 @@ function CheckoutPage() {
                   Some items are no longer available. Update your cart.
                 </Link>
               ) : (
-                <SubmitButton loading={placing} loadingText="Placing order..." icon={Check}>
-                  Place order
-                </SubmitButton>
+                <>
+                  <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-3 font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                  >
+                    <Check className="h-4 w-4" />
+                    {placing ? "Placing order..." : "Place order"}
+                  </button>
+                  {!canSubmit && !placing && option.method !== "cod" && (
+                    <p className="text-center text-xs text-slate-500">
+                      Fill in the transaction ID and your first and last name to continue.
+                    </p>
+                  )}
+                </>
               )}
             </aside>
           </form>
