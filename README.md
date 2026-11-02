@@ -13,7 +13,7 @@ Responsive storefront and admin dashboard for a campus delivery platform in Ethi
 
 | Admin orders | Pickup |
 | --- | --- |
-| ![payment verification](docs/screenshots/verification.png) | ![Pickup](docs/screenshots/pickup.png) |
+| ![payment verification](docs/screenshots/verification.png) | ![sign up](docs/screenshots/signup.png) |
 
 ## Features
 

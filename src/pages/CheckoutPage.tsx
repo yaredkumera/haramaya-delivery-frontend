@@ -45,7 +45,7 @@ const options: Option[] = [
     method: "cbe",
     payTo: "cbe",
     icon: Landmark,
-    title: "From my CBE to your CBE",
+    title: "From  CBE to owner's CBE account",
     hint: "Send from the CBE app or Mobile Banking to our CBE account",
     badge: "Fastest · Recommended",
     speed: "Checked automatically within seconds.",
@@ -61,7 +61,7 @@ const options: Option[] = [
     method: "telebirr",
     payTo: "telebirr",
     icon: Smartphone,
-    title: "From my Telebirr to your Telebirr",
+    title: "From  Telebirr to owner's Telebirr number",
     hint: "Send from the Telebirr app to our Telebirr number",
     speed: "Usually checked within a minute or two. Some orders may need a manual check.",
     idRule: {
@@ -76,7 +76,7 @@ const options: Option[] = [
     method: "telebirr",
     payTo: "cbe",
     icon: Smartphone,
-    title: "From my Telebirr to your CBE",
+    title: "From  Telebirr to owner's CBE account",
     hint: "Send from the Telebirr app to our CBE account",
     speed: "Usually checked within a minute or two. Some orders may need a manual check.",
     idRule: {
