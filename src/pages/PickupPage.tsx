@@ -14,7 +14,6 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import toast from "react-hot-toast"
-import Header from "../components/Header"
 import { PaymentBadge } from "../components/StatusBadge"
 import { useAdminOrderActionMutation, useGetOrderByPickupCodeQuery } from "../services/api"
 import { getErrorMessage } from "../utils/apiError"
@@ -258,8 +257,7 @@ function PickupPage() {
   const { data: order, isLoading, error } = useGetOrderByPickupCodeQuery(code ?? "", { skip: !code })
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <Header />
+    <div >
       <main className="mx-auto max-w-xl px-4 py-6 sm:px-6 sm:py-10">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-sm">

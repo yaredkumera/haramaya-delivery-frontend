@@ -1,7 +1,6 @@
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { AlertCircle, Ban, CheckCircle2, Inbox, Mail, Phone, RefreshCw, Search, User, XCircle } from "lucide-react"
-import Header from "../components/Header"
 import Pagination from "../components/Pagination"
 import { PaymentBadge } from "../components/StatusBadge"
 import { useAdminOrderActionMutation, useGetAdminOrdersQuery } from "../services/api"
@@ -237,8 +236,7 @@ function AdminOrders() {
   const { data, isLoading, isFetching, error } = useGetAdminOrdersQuery(query, { pollingInterval: 30_000 })
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <Header />
+    <div >
       <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         <div className="flex items-end justify-between gap-3">
           <div>

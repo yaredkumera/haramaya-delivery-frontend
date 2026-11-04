@@ -12,7 +12,9 @@ import MyOrdersPage from "./pages/MyOrdersPage"
 import AdminOrders from "./pages/AdminOrders"
 import PickupPage from "./pages/PickupPage"
 import { Toaster } from "react-hot-toast"
-
+import AdminLayout from "./components/AdminLayout";
+import AdminHome from "./pages/AdminHome";
+import AdminUsers from "./pages/AdminUsers";
 function App() {
   return (
     <>
@@ -27,12 +29,16 @@ function App() {
   <Route path="/checkout" element={<CheckoutPage />} />
   <Route path="/orders" element={<MyOrdersPage />} />
   <Route path="/orders/:id" element={<OrderPage />} />
-  <Route element={<RequireAdmin />}>
-    <Route path="/admin/products" element={<AdminProducts />} />
-    <Route path="/admin/orders" element={<AdminOrders />} />
-    <Route path="/admin/pickup" element={<PickupPage />} />
-<Route path="/admin/pickup/:code" element={<PickupPage />} />
+ <Route element={<RequireAdmin />}>
+  <Route path="/admin" element={<AdminLayout />}>
+    <Route index element={<AdminHome />} />
+    <Route path="orders" element={<AdminOrders />} />
+    <Route path="pickup" element={<PickupPage />} />
+    <Route path="pickup/:code" element={<PickupPage />} />
+    <Route path="products" element={<AdminProducts />} />
+    <Route path="users" element={<AdminUsers />} />
   </Route>
+</Route>
 </Route>
       <Route
         path="/login"

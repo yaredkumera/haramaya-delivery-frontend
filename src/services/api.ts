@@ -1,12 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { ApiResponse, AuthResult, LoginRequest, RegisterRequest, User ,ProductList,Product,ProductQuery,Cart
-  ,Order, AdminOrder, AdminOrderList, AdminOrderQuery, OrderAction, PaymentInfo, CheckoutRequest
+  ,Order, AdminOrder, AdminOrderList, AdminOrderQuery, OrderAction, PaymentInfo, CheckoutRequest,AdminUser,AdminUserQuery,AdminUserList,UserAction
 } from "../types"
 type StateWithAuth = { auth: { token: string | null } }
 
 export const api = createApi({
   reducerPath: "api",
-    tagTypes: ["Product","Cart","Order"],
+    tagTypes: ["Product","Cart","Order","User"],
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL||"http://localhost:5000/api",
     prepareHeaders: (headers, { getState }) => {
@@ -113,10 +113,28 @@ export const api = createApi({
       transformResponse: (response: ApiResponse<{ order: AdminOrder }>) => response.data.order,
       providesTags: ["Order"],
     }),
+        getAdminUsers: build.query<AdminUserList, AdminUserQuery | void>({
+      query: (params) => ({ url: "/admin/users", params: params ?? undefined }),
+      transformResponse: (response: ApiResponse<AdminUserList>) => response.data,
+      providesTags: ["User"],
+    }),
+    adminUserAction: build.mutation<AdminUser, { id: string; action: UserAction }>({
+      query: ({ id, action }) => ({ url: `/admin/users/${id}/${action}`, method: "PATCH" }),
+      transformResponse: (response: ApiResponse<{ user: AdminUser }>) => response.data.user,
+      invalidatesTags: ["User"],
+    }),
+    deleteAdminUser: build.mutation<void, string>({
+      query: (id) => ({ url: `/admin/users/${id}`, method: "DELETE" }),
+      transformResponse: () => undefined,
+      invalidatesTags: ["User"],
+    }),
   }),
 })
 
 export const {
+  useGetAdminUsersQuery,
+   useAdminUserActionMutation ,
+   useDeleteAdminUserMutation,
   useRegisterMutation,
   useLoginMutation,
   useMeQuery,

@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router"
 import {
   ChevronDown,
-  ClipboardList,
   LogIn,
   LogOut,
   Package,
-  ScanLine,
   Search,
-  ShieldCheck,
   ShoppingCart,
   User,
+  ShieldCheck ,
 } from "lucide-react"
 import { api } from "../services/api"
 import { logout } from "../context/authSlice"
@@ -29,14 +27,7 @@ const menuItem =
 const iconButton =
   "relative rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:text-slate-300 dark:hover:bg-slate-700"
 
-const adminInline =
-  "rounded-lg px-3 py-2 text-sm font-medium text-teal-700 transition hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-500/10"
 
-const adminLinks = [
-  { to: "/admin/products", label: "Products", icon: Package },
-  { to: "/admin/orders", label: "Orders", icon: ClipboardList },
-  { to: "/admin/pickup", label: "Pickup", icon: ScanLine },
-]
 
 function Header({ search, onSearch }: HeaderProps) {
   const user = useAppSelector((s) => s.auth.user)
@@ -44,7 +35,6 @@ function Header({ search, onSearch }: HeaderProps) {
   const cartCount = useCartCount()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const isAdmin = user?.role === "admin"
 
   useEffect(() => {
     if (!open) return
@@ -96,15 +86,7 @@ function Header({ search, onSearch }: HeaderProps) {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-          {isAdmin && (
-            <nav className="mr-1 hidden items-center lg:flex" aria-label="Admin">
-              {adminLinks.map(({ to, label }) => (
-                <Link key={to} to={to} className={adminInline}>
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          )}
+         
 
           <ThemeToggle />
 
@@ -149,22 +131,12 @@ function Header({ search, onSearch }: HeaderProps) {
                       </span>
                     )}
                   </Link>
-
-                  {isAdmin && (
-                    <div className="lg:hidden">
-                      <div className="my-2 border-t border-slate-100 dark:border-slate-700" />
-                      <p className="flex items-center gap-1.5 px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-400">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        Admin
-                      </p>
-                      {adminLinks.map(({ to, label, icon: Icon }) => (
-                        <Link key={to} to={to} role="menuitem" className={menuItem} onClick={() => setOpen(false)}>
-                          <Icon className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                          {label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                 {user?.role === "admin" && (
+  <Link to="/admin" role="menuitem" className={menuItem} onClick={() => setOpen(false)}>
+<ShieldCheck className="h-3 w-3" />
+    Admin dashboard
+  </Link> 
+)}
 
                   <div className="my-2 border-t border-slate-100 dark:border-slate-700" />
                   <button
