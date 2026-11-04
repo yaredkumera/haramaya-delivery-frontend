@@ -131,3 +131,16 @@ export type PaymentInfo = Record<"telebirr" | "cbe", { name: string; number: str
 export type CheckoutRequest =
   | { paymentMethod: "cod" }
   | { paymentMethod: "telebirr" | "cbe"; transactionId: string; payerName: string }
+  export type AdminUser = {
+  id: string
+  fullName: string
+  email: string
+  phone: string
+  role: Role
+  blocked: boolean
+  createdAt: string
+}
+export type AdminUserList = { items: AdminUser[]; page: number; limit: number; total: number; totalPages: number }
+export type UserFilter = "all" | "students" | "blocked" | "admins"
+export type AdminUserQuery = { search?: string; filter?: UserFilter; page?: number; limit?: number }
+export type UserAction = "block" | "unblock"
