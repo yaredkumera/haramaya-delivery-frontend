@@ -1,10 +1,10 @@
 export type Role = "student" | "admin"
 
-export type User = { id: string; fullName: string; phone: string; email: string; role: Role }
+export type User = { id: string; fullName: string; phone?: string; email: string; role: Role }
 export type AuthResult = { token: string; user: User }
 
 export type LoginRequest = { email: string; password: string }
-export type RegisterRequest = { fullName: string; phone: string; email: string; password: string }
+export type RegisterRequest = { fullName: string; phone?: string; email: string; password: string }
 
 export type ApiResponse<T> = { success: true; message?: string; data: T }
 export type ApiErrorBody = {
@@ -109,7 +109,7 @@ export type Order = {
 }
 
 export type AdminOrder = Order & {
-  customer: { fullName: string; phone: string; email: string }
+  customer: { fullName: string; phone?: string; email: string }
   transactionId?: string
   payerName?: string
   reviewNotes: string[]
@@ -135,7 +135,7 @@ export type CheckoutRequest =
   id: string
   fullName: string
   email: string
-  phone: string
+  phone?: string
   role: Role
   blocked: boolean
   createdAt: string

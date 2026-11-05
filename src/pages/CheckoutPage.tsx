@@ -1,6 +1,8 @@
 import { useState } from "react"
 import type { SubmitEvent } from "react"
 import { Link, useNavigate } from "react-router"
+import { useAppSelector } from "../context/hooks"
+import AddPhone from "../components/AddPhone"
 import {
   ArrowLeft,
   Banknote,
@@ -148,6 +150,7 @@ function CheckoutPage() {
   const namesValid = option.method === "cod" ? true : firstName.trim().length >= 2 && lastName.trim().length >= 2
   const canSubmit =
     items.length > 0 && !blocked && !placing && idValid && namesValid && (option.method === "cod" || Boolean(payTo))
+    const user = useAppSelector((s) => s.auth.user)
 
   function chooseOption(id: OptionId) {
     setOptionId(id)
@@ -174,6 +177,7 @@ function CheckoutPage() {
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!user?.phone) { setError("Add your phone number first"); return }
     if (!canSubmit) return
     setError(null)
     setFieldErrors({})
@@ -246,7 +250,7 @@ function CheckoutPage() {
               </Link>
             </div>
           )}
-
+{user && !user.phone && <AddPhone />}
           {items.length > 0 && (
             <form onSubmit={handleSubmit} className="mt-6 grid gap-6 lg:grid-cols-3 lg:gap-8">
               <section className="min-w-0 space-y-5 lg:col-span-2">

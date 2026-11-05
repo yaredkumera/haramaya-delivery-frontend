@@ -8,14 +8,10 @@ import AuthLayout from "../components/AuthLayout"
 import Field from "../components/Field"
 import FormError from "../components/FormError"
 import SubmitButton from "../components/SubmitButton"
-import GoogleIcon from "../components/GoogleIcon"
+import GoogleButton from "../components/GoogleButton"
 
-type LoginProps = {
-  onForgotPassword?: () => void
-  onGoogleSignIn?: () => void
-}
 
-function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
+function Login() {
   const navigate = useNavigate()
   const [login, { isLoading }] = useLoginMutation()
 
@@ -51,14 +47,7 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
       heroTitle="Your campus feast, delivered."
       heroText="Order food and goods from the Harar and Dire Dawa markets, and collect them at one easy pickup address near campus."
     >
-      <button
-        type="button"
-        onClick={() => onGoogleSignIn?.()}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
-      >
-        <GoogleIcon />
-        Continue with Google
-      </button>
+      <GoogleButton onError={setError} />
 
       <div className="my-5 flex items-center gap-3">
         <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
@@ -86,15 +75,7 @@ function Login({ onForgotPassword, onGoogleSignIn }: LoginProps) {
           onChange={setPassword}
           placeholder="••••••••"
           autoComplete="current-password"
-          labelAction={
-            <button
-              type="button"
-              onClick={() => onForgotPassword?.()}
-              className="text-xs font-semibold text-teal-700 hover:underline dark:text-teal-400"
-            >
-              Forgot password?
-            </button>
-          }
+         labelAction={<Link to="/forgot-password" className="text-xs font-medium text-teal-700 hover:underline">Forgot password?</Link>}
         />
 
         <FormError message={error} />
