@@ -1,12 +1,13 @@
 import { useState } from "react"
 import toast from "react-hot-toast"
-import { Ban, Search, ShieldCheck, Trash2, UserCheck } from "lucide-react"
+import { Ban, Search, ShieldCheck, Trash2, UserCheck,Link2 } from "lucide-react"
 import Pagination from "../components/Pagination"
 import {
   useAdminUserActionMutation,
   useDeleteAdminUserMutation,
   useGetAdminUsersQuery,
 } from "../services/api"
+import { useCreateResetLinkMutation } from "../services/api"
 import { useDebounce } from "../hooks/useDebounce"
 import { getErrorMessage } from "../utils/apiError"
 import { formatDate } from "../utils/format"
@@ -27,7 +28,16 @@ function UserCard({ user }: { user: AdminUser }) {
   const [remove, { isLoading: removing }] = useDeleteAdminUserMutation()
   const busy = acting || removing
   const isStudent = user.role === "student"
+const [makeLink, { isLoading: linking }] = useCreateResetLinkMutation()
+const [link, setLink] = useState<string | null>(null)
 
+async function createLink() {
+  try {
+    setLink(await makeLink(user.id).unwrap())
+  } catch (err) {
+    toast.error(getErrorMessage(err))
+  }
+}
   async function run(action: () => Promise<unknown>) {
     try {
       await action()
@@ -67,12 +77,16 @@ function UserCard({ user }: { user: AdminUser }) {
         </div>
         <p className="break-all text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {user.phone} · joined {formatDate(user.createdAt)}
+          {user.phone?? "No phone"} · joined {formatDate(user.createdAt)}
         </p>
       </div>
 
       {isStudent && (
         <div className="flex gap-2">
+          <button type="button" disabled={busy || linking} onClick={createLink} className={`${button} bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200`}>
+  <Link2 className="h-4 w-4" />
+  Reset link
+</button>
           <button
             type="button"
             disabled={busy}
@@ -97,6 +111,12 @@ function UserCard({ user }: { user: AdminUser }) {
           </button>
         </div>
       )}
+      {link && (
+  <div className="flex basis-full items-center gap-2 rounded-xl bg-slate-50 p-2 dark:bg-slate-900/40">
+    <input readOnly value={link} onFocus={(e) => e.target.select()} className="min-w-0 flex-1 bg-transparent px-2 text-xs text-slate-700 dark:text-slate-200" />
+    <button type="button" className={`${button} bg-teal-700 text-white`} onClick={() => navigator.clipboard.writeText(link).then(() => toast.success("Link copied"))}>Copy</button>
+  </div>
+)}
     </li>
   )
 }

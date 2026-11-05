@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice ,isAnyOf} from "@reduxjs/toolkit"
 import { api } from "../services/api"
 import type { User } from "../types"
 
@@ -25,13 +25,22 @@ const authSlice = createSlice({
   reducers: {
     logout: () => empty,
   },
-  extraReducers: (builder) => {
+   extraReducers: (builder) => {
     builder
-      .addMatcher(api.endpoints.login.matchFulfilled, (_state, { payload }) => payload)
-      .addMatcher(api.endpoints.register.matchFulfilled, (_state, { payload }) => payload)
-      .addMatcher(api.endpoints.me.matchFulfilled, (state, { payload }) => {
-        state.user = payload
-      })
+      .addMatcher(
+        isAnyOf(
+          api.endpoints.login.matchFulfilled,
+          api.endpoints.register.matchFulfilled,
+          api.endpoints.googleLogin.matchFulfilled,
+        ),
+        (_state, { payload }) => payload,
+      )
+      .addMatcher(
+        isAnyOf(api.endpoints.me.matchFulfilled, api.endpoints.updatePhone.matchFulfilled),
+        (state, { payload }) => {
+          state.user = payload
+        },
+      )
   },
 })
 export const { logout } = authSlice.actions

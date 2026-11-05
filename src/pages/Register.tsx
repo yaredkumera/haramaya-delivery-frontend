@@ -8,7 +8,7 @@ import AuthLayout from "../components/AuthLayout"
 import Field from "../components/Field"
 import FormError from "../components/FormError"
 import SubmitButton from "../components/SubmitButton"
-
+import GoogleButton from "../components/GoogleButton"
 const tidyName = (text: string) => text.replace(/\s+/g, " ").trim()
 
 function Register() {
@@ -79,6 +79,12 @@ function Register() {
       heroTitle="Join Haramaya Delivery."
       heroText="Create a free account to start ordering. It takes less than a minute."
     >
+      <GoogleButton onError={setError} />
+<div className="my-4 flex items-center gap-3">
+  <div className="h-px flex-1 bg-slate-200" />
+  <span className="text-xs text-slate-400">or fill in the form</span>
+  <div className="h-px flex-1 bg-slate-200" />
+</div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field

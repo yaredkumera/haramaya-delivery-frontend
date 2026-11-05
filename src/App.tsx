@@ -15,6 +15,8 @@ import { Toaster } from "react-hot-toast"
 import AdminLayout from "./components/AdminLayout";
 import AdminHome from "./pages/AdminHome";
 import AdminUsers from "./pages/AdminUsers";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function App() {
   return (
     <>
@@ -40,15 +42,9 @@ function App() {
   </Route>
 </Route>
 </Route>
-      <Route
-        path="/login"
-        element={
-          <Login
-            onForgotPassword={() => console.log("go to forgot password page")}
-            onGoogleSignIn={() => console.log("start Google sign-in")}
-          />
-        }
-      />
+     <Route path="/login" element={<Login />} />
+<Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/register" element={<Register />} />
       <Route path="*" element={<p className="p-6">Page not found</p>} />
     </Routes>

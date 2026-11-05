@@ -128,10 +128,35 @@ export const api = createApi({
       transformResponse: () => undefined,
       invalidatesTags: ["User"],
     }),
+        googleLogin: build.mutation<AuthResult, { credential: string }>({
+      query: (body) => ({ url: "/auth/google", method: "POST", body }),
+      transformResponse: (response: ApiResponse<AuthResult>) => response.data,
+    }),
+    updatePhone: build.mutation<User, { phone: string }>({
+      query: (body) => ({ url: "/auth/me", method: "PATCH", body }),
+      transformResponse: (response: ApiResponse<{ user: User }>) => response.data.user,
+    }),
+    forgotPassword: build.mutation<void, { email: string }>({
+      query: (body) => ({ url: "/auth/forgot-password", method: "POST", body }),
+      transformResponse: () => undefined,
+    }),
+    resetPassword: build.mutation<void, { token: string; password: string }>({
+      query: (body) => ({ url: "/auth/reset-password", method: "POST", body }),
+      transformResponse: () => undefined,
+    }),
+    createResetLink: build.mutation<string, string>({
+      query: (id) => ({ url: `/admin/users/${id}/reset-link`, method: "POST" }),
+      transformResponse: (response: ApiResponse<{ link: string }>) => response.data.link,
+    }),
   }),
 })
 
 export const {
+  useGoogleLoginMutation, 
+  useUpdatePhoneMutation,
+   useForgotPasswordMutation, 
+  useResetPasswordMutation,
+   useCreateResetLinkMutation,
   useGetAdminUsersQuery,
    useAdminUserActionMutation ,
    useDeleteAdminUserMutation,
