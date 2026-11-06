@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
-import { AlertCircle, ArrowLeft, Minus, Plus, RefreshCw, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react"
+import { AlertCircle, ArrowLeft, HelpCircle, Minus, Plus, RefreshCw, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react"
 import Header from "../components/Header"
 import {
   useClearCartMutation,
@@ -229,6 +229,19 @@ function CartPage() {
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Every payment is checked before pickup
               </p>
+
+              {/* --- HELP LINK ADDED HERE --- */}
+              <div className="mt-4 border-t border-slate-100 pt-3 text-center dark:border-slate-700">
+                <Link
+                  to="/help"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-cyan-600 hover:underline dark:text-cyan-400"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span>Need help with your order?</span>
+                </Link>
+              </div>
             </aside>
           </div>
         )}

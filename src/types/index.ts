@@ -21,8 +21,8 @@ export type Market = (typeof markets)[number]
 export const categoryLabels: Record<Category, string> = {
   electronics: "Electronics",
   "personal-care": "Personal Care",
-  study: "Study",
-  dorm: "Dorm",
+  study: "Clothes",
+  dorm: "Shoes",
   food: "Food",
 }
 

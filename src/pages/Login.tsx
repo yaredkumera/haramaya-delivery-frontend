@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { SubmitEvent } from "react"
 import { Link, useNavigate } from "react-router"
-import { Mail, Lock, LogIn } from "lucide-react"
+import { Mail, Lock, LogIn, HelpCircle } from "lucide-react"
 import { useLoginMutation } from "../services/api"
 import { getErrorMessage } from "../utils/apiError"
 import AuthLayout from "../components/AuthLayout"
@@ -9,7 +9,6 @@ import Field from "../components/Field"
 import FormError from "../components/FormError"
 import SubmitButton from "../components/SubmitButton"
 import GoogleButton from "../components/GoogleButton"
-
 
 function Login() {
   const navigate = useNavigate()
@@ -45,7 +44,7 @@ function Login() {
       title="Welcome back"
       subtitle="Sign in to order from Harar and Dire Dawa markets"
       heroTitle="Your campus feast, delivered."
-      heroText="Order food and goods from the Harar and Dire Dawa markets, and collect them at one easy pickup address near campus."
+      heroText="Order  goods from  Harar and Dire Dawa markets, and collect them at one easy pickup address near Main campus, Bate."
     >
       <GoogleButton onError={setError} />
 
@@ -75,7 +74,11 @@ function Login() {
           onChange={setPassword}
           placeholder="••••••••"
           autoComplete="current-password"
-         labelAction={<Link to="/forgot-password" className="text-xs font-medium text-teal-700 hover:underline">Forgot password?</Link>}
+          labelAction={
+            <Link to="/forgot-password" className="text-xs font-medium text-teal-700 hover:underline dark:text-teal-400">
+              Forgot password?
+            </Link>
+          }
         />
 
         <FormError message={error} />
@@ -85,12 +88,25 @@ function Login() {
         </SubmitButton>
       </form>
 
-      <p className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        New to Haramaya Delivery?{" "}
-        <Link to="/register" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
-          Create account
+      {/* --- HELP LINK PLACED HERE AT BOTTOM --- */}
+      <div className="mt-6 border-t border-slate-200 pt-4 flex items-center justify-between text-sm dark:border-slate-700">
+        <p className="text-slate-500 dark:text-slate-400">
+          New to Haramaya Delivery?{" "}
+          <Link to="/register" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
+            Create account
+          </Link>
+        </p>
+
+        <Link
+          to="/help"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs font-medium text-cyan-600 hover:text-cyan-500 dark:text-cyan-400"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span>Need Help?</span>
         </Link>
-      </p>
+      </div>
     </AuthLayout>
   )
 }

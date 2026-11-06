@@ -98,6 +98,7 @@ function Header({ search, onSearch }: HeaderProps) {
               </span>
             )}
           </Link>
+          
 
           {user ? (
             <div className="relative" ref={menuRef}>
