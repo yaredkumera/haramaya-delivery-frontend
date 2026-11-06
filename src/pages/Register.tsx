@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { SubmitEvent } from "react"
 import { Link, useNavigate } from "react-router"
-import { User, Phone, Mail, Lock, UserPlus } from "lucide-react"
+import { User, Phone, Mail, Lock, UserPlus, HelpCircle } from "lucide-react"
 import { useRegisterMutation } from "../services/api"
 import { getErrorMessage, getFieldErrors } from "../utils/apiError"
 import AuthLayout from "../components/AuthLayout"
@@ -58,7 +58,6 @@ function Register() {
       return
     }
 
-    // The three names are joined into one full name before reaching the server
     const fullName = [first, middle, last].join(" ")
 
     setError(null)
@@ -80,11 +79,12 @@ function Register() {
       heroText="Create a free account to start ordering. It takes less than a minute."
     >
       <GoogleButton onError={setError} />
-<div className="my-4 flex items-center gap-3">
-  <div className="h-px flex-1 bg-slate-200" />
-  <span className="text-xs text-slate-400">or fill in the form</span>
-  <div className="h-px flex-1 bg-slate-200" />
-</div>
+      <div className="my-4 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+        <span className="text-xs text-slate-400">or fill in the form</span>
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+      </div>
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
@@ -171,12 +171,25 @@ function Register() {
           Register Now &amp; Start Ordering
         </SubmitButton>
 
-        <p className="pt-2 text-sm text-slate-500 dark:text-slate-400">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
-            Sign in
+        {/* --- HELP LINK ADDED HERE --- */}
+        <div className="flex items-center justify-between pt-2 text-sm">
+          <p className="text-slate-500 dark:text-slate-400">
+            Already have an account?{" "}
+            <Link to="/login" className="font-semibold text-teal-700 hover:underline dark:text-teal-400">
+              Sign in
+            </Link>
+          </p>
+          
+          <Link 
+            to="/help" 
+            target="_blank"
+            className="inline-flex items-center gap-1 text-xs font-medium text-cyan-600 hover:text-cyan-500 dark:text-cyan-400"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span>Need Help?</span>
           </Link>
-        </p>
+        </div>
+
         <p className="text-xs text-slate-400 dark:text-slate-500">
           By registering, you agree to our <span className="underline">Terms &amp; Conditions</span>.
         </p>

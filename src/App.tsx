@@ -17,6 +17,7 @@ import AdminHome from "./pages/AdminHome";
 import AdminUsers from "./pages/AdminUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Help from "./pages/Help";
 function App() {
   return (
     <>
@@ -46,7 +47,9 @@ function App() {
 <Route path="/forgot-password" element={<ForgotPassword />} />
 <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/help" element={<Help/>}/>
       <Route path="*" element={<p className="p-6">Page not found</p>} />
+      
     </Routes>
     <Toaster
         position="top-center"
