@@ -1,6 +1,17 @@
 export type Role = "student" | "admin"
 
-export type User = { id: string; fullName: string; phone?: string; email: string; role: Role }
+export type User = {
+  id: string
+  fullName: string
+  phone?: string
+  email: string
+  role: Role
+  avatarUrl?: string
+  avatarSource?: "uploaded" | "google"
+  hasPassword: boolean
+  createdAt: string
+
+}
 export type AuthResult = { token: string; user: User }
 
 export type LoginRequest = { email: string; password: string }
