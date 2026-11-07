@@ -132,8 +132,20 @@ export const api = createApi({
       query: (body) => ({ url: "/auth/google", method: "POST", body }),
       transformResponse: (response: ApiResponse<AuthResult>) => response.data,
     }),
-    updatePhone: build.mutation<User, { phone: string }>({
+        updateProfile: build.mutation<User, { fullName?: string; phone?: string }>({
       query: (body) => ({ url: "/auth/me", method: "PATCH", body }),
+      transformResponse: (response: ApiResponse<{ user: User }>) => response.data.user,
+    }),
+    changePassword: build.mutation<AuthResult, { currentPassword: string; newPassword: string }>({
+      query: (body) => ({ url: "/auth/change-password", method: "POST", body }),
+      transformResponse: (response: ApiResponse<AuthResult>) => response.data,
+    }),
+    uploadAvatar: build.mutation<User, FormData>({
+      query: (body) => ({ url: "/auth/me/avatar", method: "POST", body }),
+      transformResponse: (response: ApiResponse<{ user: User }>) => response.data.user,
+    }),
+    removeAvatar: build.mutation<User, void>({
+      query: () => ({ url: "/auth/me/avatar", method: "DELETE" }),
       transformResponse: (response: ApiResponse<{ user: User }>) => response.data.user,
     }),
     forgotPassword: build.mutation<void, { email: string }>({
@@ -152,8 +164,11 @@ export const api = createApi({
 })
 
 export const {
+  useUpdateProfileMutation,
+   useChangePasswordMutation, 
+   useUploadAvatarMutation, 
+   useRemoveAvatarMutation,
   useGoogleLoginMutation, 
-  useUpdatePhoneMutation,
    useForgotPasswordMutation, 
   useResetPasswordMutation,
    useCreateResetLinkMutation,

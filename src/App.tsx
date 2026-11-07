@@ -17,6 +17,7 @@ import AdminHome from "./pages/AdminHome";
 import AdminUsers from "./pages/AdminUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AccountPage from "./pages/AccountPage";
 import Help from "./pages/Help";
 function App() {
   return (
@@ -28,7 +29,9 @@ function App() {
 
 
 <Route element={<RequireAuth />}>
+
   <Route path="/cart" element={<CartPage />} />
+  <Route path="/account" element={<AccountPage />} />
   <Route path="/checkout" element={<CheckoutPage />} />
   <Route path="/orders" element={<MyOrdersPage />} />
   <Route path="/orders/:id" element={<OrderPage />} />

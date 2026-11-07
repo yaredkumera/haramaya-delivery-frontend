@@ -1,69 +1,24 @@
-import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router"
-import {
-  ChevronDown,
-  LogIn,
-  LogOut,
-  Package,
-  Search,
-  ShoppingCart,
-  User,
-  ShieldCheck ,
-} from "lucide-react"
-import { api } from "../services/api"
-import { logout } from "../context/authSlice"
-import { useAppDispatch, useAppSelector } from "../context/hooks"
+import { Search, ShoppingCart } from "lucide-react"
 import { useCartCount } from "../hooks/useCartCount"
 import ThemeToggle from "./ThemeToggle"
+import UserMenu from "./UserMenu"
 
 type HeaderProps = {
   search?: string
   onSearch?: (value: string) => void
 }
 
-const menuItem =
-  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus-visible:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
-
 const iconButton =
   "relative rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:text-slate-300 dark:hover:bg-slate-700"
 
-
-
 function Header({ search, onSearch }: HeaderProps) {
-  const user = useAppSelector((s) => s.auth.user)
-  const dispatch = useAppDispatch()
   const cartCount = useCartCount()
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    function onPointerDown(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setOpen(false)
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false)
-    }
-    document.addEventListener("mousedown", onPointerDown)
-    document.addEventListener("touchstart", onPointerDown)
-    document.addEventListener("keydown", onKeyDown)
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown)
-      document.removeEventListener("touchstart", onPointerDown)
-      document.removeEventListener("keydown", onKeyDown)
-    }
-  }, [open])
-
-  function handleLogout() {
-    setOpen(false)
-    dispatch(logout())
-    dispatch(api.util.resetApiState())
-  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
-        <Link to="/" className="flex shrink-0 items-center gap-2" onClick={() => setOpen(false)}>
+        <Link to="/" className="flex shrink-0 items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-sm font-bold text-white shadow-sm">
             HU
           </span>
@@ -86,8 +41,6 @@ function Header({ search, onSearch }: HeaderProps) {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-         
-
           <ThemeToggle />
 
           <Link to="/cart" aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ""}`} className={iconButton}>
@@ -98,69 +51,9 @@ function Header({ search, onSearch }: HeaderProps) {
               </span>
             )}
           </Link>
-          
 
-          {user ? (
-            <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                onClick={() => setOpen((value) => !value)}
-                aria-haspopup="menu"
-                aria-expanded={open}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Account</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-              </button>
-
-              {open && (
-                <div
-                  role="menu"
-                  className="absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-800"
-                >
-                  <Link to="/orders" role="menuitem" className={menuItem} onClick={() => setOpen(false)}>
-                    <Package className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    My orders
-                  </Link>
-                  <Link to="/cart" role="menuitem" className={menuItem} onClick={() => setOpen(false)}>
-                    <ShoppingCart className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    <span className="flex-1">Cart</span>
-                    {cartCount > 0 && (
-                      <span className="rounded-full bg-teal-600 px-2 py-0.5 text-xs font-bold text-white">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Link>
-                 {user?.role === "admin" && (
-  <Link to="/admin" role="menuitem" className={menuItem} onClick={() => setOpen(false)}>
-<ShieldCheck className="h-3 w-3" />
-    Admin dashboard
-  </Link> 
-)}
-
-                  <div className="my-2 border-t border-slate-100 dark:border-slate-700" />
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus-visible:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 dark:focus-visible:bg-red-500/10"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              className="flex items-center gap-1.5 rounded-xl bg-teal-700 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:bg-teal-600 dark:hover:bg-teal-500 dark:focus-visible:ring-offset-slate-900"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign in
-            </Link>
-          )}
+          {/* User Menu component placed at the far right */}
+          <UserMenu />
         </div>
       </div>
     </header>

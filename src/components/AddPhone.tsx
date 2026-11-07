@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { Phone, AlertTriangle, CheckCircle2 } from "lucide-react"
 import Field from "./Field"
-import { useUpdatePhoneMutation } from "../services/api"
+import { useUpdateProfileMutation } from "../services/api"
 import { getErrorMessage } from "../utils/apiError"
 
 function AddPhone() {
-  const [save, { isLoading }] = useUpdatePhoneMutation()
+  const [save, { isLoading }] = useUpdateProfileMutation()
   const [phone, setPhone] = useState("")
   const [error, setError] = useState<string | undefined>()
 
